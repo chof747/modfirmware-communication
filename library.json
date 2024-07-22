@@ -8,18 +8,13 @@
     "description": "A library collection providing firmware for basic controls",
     "dependencies": [
         {
-            "owner": "arduino-libraries",
-            "name": "WiFi",
-            "version": "*"
-        },
-        {
-            "name": "WiFiManager",
-            "owner": "tzapu",
-            "version": "https://github.com/tzapu/WiFiManager.git"
-        },
-        {
             "name": "ModFirmwareBase",
             "version": "https://github.com/chof747/modfirmware-base.git"
+        },
+        {
+            "name": "PubSubClient",
+            "owner": "knolleary",
+            "version": "*"
         }
     ]
 }

@@ -15,50 +15,64 @@ using namespace ModFirmWare;
 #define LOGCOMPONENT "WIFI"
 WiFiManager wifiMgr;
 
+#define IS_VALID_KEY(KEY) ((WIFI_SSID == KEY) || (WIFI_PASSWD == KEY))
 
-#define IS_VALID_KEY(KEY) ((WIFI_SSID == KEY) || (WIFI_PASSWD == KEY) )
-
-WLan::WLan(const char* configSSID, const char* configPassWd): 
-Component(), configSSID(configSSID), configPassWd(configPassWd) 
+WLan::WLan(const char *configSSID, const char *configPassWd) : Component(), configurators(), configSSID(configSSID), configPassWd(configPassWd)
 //****************************************************************************************
 {
-
 }
 
-WLan::WLan(): Component()
+WLan::WLan() : Component(), configurators()
 //****************************************************************************************
 {
+}
 
+size_t WLan::addConfigurator(ConfigComponent *configurator)
+//****************************************************************************************
+{
+  if (nullptr != configurator)
+  {
+    configurators.push_back(configurator);
+  }
+
+  return configurators.size();
 }
 
 void WLan::resetWifiSettings()
 //****************************************************************************************
 {
-    wifiMgr.resetSettings();
+  wifiMgr.resetSettings();
 }
 
 bool WLan::setup(Application *app)
 //****************************************************************************************
 {
-    if (Component::setup(app))
+  if (Component::setup(app))
+  {
+    wifiMgr.setSaveConfigCallback([this]()
+                                  { notifySaveConfig(); });
+
+    initializeAndAddParametersFromConfigurators();
+    //wifiMgr.resetSettings();
+
+    logger->info(LOGCOMPONENT, "Starting Wifi!");
+    if (wifiMgr.autoConnect(configSSID, configPassWd))
     {
-        if(wifiMgr.autoConnect(configSSID, configPassWd))
-        {
-          logger->info(LOGCOMPONENT, "Connected to WiFi %s with IP %s", 
-            WiFi.SSID().c_str(), 
-            WiFi.localIP().toString().c_str());            
-          return true;
-        }
-        else
-        {
-          logger->error(LOGCOMPONENT, "Failed to connect");
-          return false;
-        } 
+      logger->info(LOGCOMPONENT, "Connected to WiFi %s with IP %s",
+                   WiFi.SSID().c_str(),
+                   WiFi.localIP().toString().c_str());
+      return true;
     }
     else
     {
-        return false;
+      logger->error(LOGCOMPONENT, "Failed to connect");
+      return false;
     }
+  }
+  else
+  {
+    return false;
+  }
 }
 
 void WLan::loop()
@@ -66,3 +80,21 @@ void WLan::loop()
 {
 }
 
+void WLan::initializeAndAddParametersFromConfigurators()
+//****************************************************************************************
+{
+  for (configComponentsVector_t::iterator i = configurators.begin(); i != configurators.end(); ++i)
+  {
+    (*i)->readConfig();
+    (*i)->addParameters(&wifiMgr);
+  }
+}
+
+void WLan::notifySaveConfig()
+//****************************************************************************************
+{
+  for (configComponentsVector_t::iterator i = configurators.begin(); i != configurators.end(); ++i)
+  {
+    (*i)->saveConfig(&wifiMgr);
+  }
+}

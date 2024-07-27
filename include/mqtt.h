@@ -4,35 +4,71 @@
 #include <modfw_component.h>
 #include "wificonfig.h"
 #include "WiFiManager.h"
+#include <PubSubClient.h>
+
+class Client;
+class WiFiClass;
 
 namespace ModFirmWare
 {
+
+  class Application;
+
   class Mqtt : public Component, public ConfigComponent
   {
   public:
     Mqtt();
+    enum TopicRegime {
+      TYPEDEVICE,
+      DEVICETYPE,
+      TOPICONLY
+    };
+
     bool setup(Application *);
     void loop();
 
+    void setClient(Client* client) { this->client = client; mqttClient.setClient(*client); }
+    void setTopicRegime(const TopicRegime topicRegime); 
+    const TopicRegime getTopicRegime() const { return topicRegime; }
+
     void addParameters(WiFiManager *wifiManager);
+    
+    void sendMessage(const char* msgType, const char* topic, const char* message);
 
   protected:
-      const char* getFileName() const { return "/mqtt.conf"; }
+    PubSubClient mqttClient;
+
+    TopicRegime topicRegime;
+
+    const char* getFileName() const { return "/mqtt.conf"; }
+    String composeTopic(const char* msgType, const char* topic);
+
+    void setConfiguration();
+    void reconnect();
+
+    void subscribeTopics();
+    void callback(char* topic, byte* payload, unsigned int length);
+
     size_t readParameters(String configLine);
     String writeParameters(WiFiManager* wifiManager);
 
   private:
 
-    WiFiManagerParameter custom_mqtt_server;
-    WiFiManagerParameter custom_mqtt_port;
-    WiFiManagerParameter custom_mqtt_user;
-    WiFiManagerParameter custom_mqtt_password;
+    Client* client;
+    Application* app;
+
+    WiFiManagerParameter customParamMqttServer;
+    WiFiManagerParameter customParamMqttPort;
+    WiFiManagerParameter customParamMqttUser;
+    WiFiManagerParameter customParamMqttPassWd;
 
 
-    char mqtt_server[40];
-    char mqtt_user[32];
-    char mqtt_passwd[32];
-    char mqtt_port[6];
+    char mqttServer[40];
+    char mqttUser[32];
+    char mqttPassWd[32];
+    char mqttPort[6];
+
+    unsigned long lastUnsuccessfulReconnect;
 
   };
 };

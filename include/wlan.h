@@ -5,6 +5,14 @@
 #include "wificonfig.h"
 #include <vector>
 
+#ifdef ARDUINO_ARCH_ESP32
+#include <WiFi.h>
+#elif defined(ESP8266)
+#include <ESP8266WiFi.h>
+#define WIFICLIENT WifiClient
+#endif
+
+
 // according to IEEE Wifi Standard
 #define MAX_SSID_LENGTH 35
 #define MAX_PASSWD_LENGTH 64
@@ -31,6 +39,7 @@ namespace ModFirmWare
         void resetWifiSettings();
 
         size_t addConfigurator(ConfigComponent* configurator);
+        Client* getClient() { return &client; };
 
         virtual bool setup(Application *);
         virtual void loop();
@@ -41,6 +50,7 @@ namespace ModFirmWare
     private:
 
         configComponentsVector_t configurators;
+        WiFiClient client;
 
         const char *configSSID;
         const char *configPassWd;

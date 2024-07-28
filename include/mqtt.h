@@ -5,6 +5,21 @@
 #include "wificonfig.h"
 #include "WiFiManager.h"
 #include <PubSubClient.h>
+#include <vector>
+#include <map>
+
+#ifndef MQTT_STATE_TOPIC
+#define MQTT_STATE_TOPIC "state"
+#endif
+
+#ifndef MQTT_TELE_TOPIC
+#define MQTT_TELE_TOPIC "tele"
+#endif
+
+#ifndef MQTT_COMMAND_TOPIC
+#define MQTT_COMMAND_TOPIC "cmnd"
+#endif
+
 
 class Client;
 class WiFiClass;
@@ -17,12 +32,14 @@ namespace ModFirmWare
   class Mqtt : public Component, public ConfigComponent
   {
   public:
-    Mqtt();
     enum TopicRegime {
       TYPEDEVICE,
       DEVICETYPE,
       TOPICONLY
     };
+    using Callback = std::function<void(const char* topic, const char* payload)>;
+
+    Mqtt();
 
     bool setup(Application *);
     void loop();
@@ -34,11 +51,15 @@ namespace ModFirmWare
     void addParameters(WiFiManager *wifiManager);
     
     void sendMessage(const char* msgType, const char* topic, const char* message);
+    void subscribe(const char *msgType, const char* topic, Callback callback);
+
 
   protected:
-    PubSubClient mqttClient;
+    typedef std::map<String, std::vector<Callback>> subscribers_t;
 
+    PubSubClient mqttClient;
     TopicRegime topicRegime;
+    subscribers_t subscribers;
 
     const char* getFileName() const { return "/mqtt.conf"; }
     String composeTopic(const char* msgType, const char* topic);

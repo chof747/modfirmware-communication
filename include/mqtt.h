@@ -51,7 +51,8 @@ namespace ModFirmWare
     void addParameters(WiFiManager *wifiManager);
     
     void sendMessage(const char* msgType, const char* topic, const char* message);
-    void subscribe(const char *msgType, const char* topic, Callback callback);
+    void registerCommand(const char* command, Callback callback);
+    void subscribeTo(const char* topic, Callback callback);
 
 
   protected:

@@ -110,10 +110,16 @@ void Mqtt::sendMessage(const char *msgType, const char *topic, const char *messa
   mqttClient.publish(composedTopic.c_str(), message);
 }
 
-void Mqtt::subscribe(const char *msgType, const char *topic, Callback callback)
+void Mqtt::registerCommand(const char *command, Callback callback)
 //****************************************************************************************
 {
-  String topicix = composeTopic(msgType, topic);
+  subscribeTo(composeTopic(MQTT_COMMAND_TOPIC, command).c_str(), callback);
+}
+
+void Mqtt::subscribeTo(const char* topic, Callback callback)
+//****************************************************************************************
+{
+  String topicix = topic;
   subscribers[topicix].push_back(callback);
   mqttClient.subscribe(topicix.c_str());
 }
@@ -192,9 +198,9 @@ void Mqtt::reconnect()
 void Mqtt::subscribeTopics()
 //****************************************************************************************
 {
-  for (subscribers_t::iterator it = subscribers.begin(); it != subscribers.end(); ++it) 
+  for (subscribers_t::iterator it = subscribers.begin(); it != subscribers.end(); ++it)
   {
-      mqttClient.subscribe(it->first.c_str()); 
+    mqttClient.subscribe(it->first.c_str());
   }
 }
 

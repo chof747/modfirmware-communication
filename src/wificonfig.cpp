@@ -16,7 +16,10 @@ size_t ConfigComponent::readConfig()
 //****************************************************************************************
 {
   if (!fsReady)
+  {
+    clogger->error(LOGTAG, "Filesystem not ready!");
     return 0;
+  }
 
   const char *filename = getFileName();
 

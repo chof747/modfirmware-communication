@@ -171,9 +171,12 @@ void Mqtt::reconnect()
   String clientId = MQTT_CLIENT_ID_PREFIX;
   clientId += '-';
   clientId += String(random(0xffff), HEX);
-
+  
   logger->debug(LOGTAG, "Trying to connect to MQTT server %s with client ID = %s",
                 mqttServer, clientId.c_str());
+  //logger->debug(LOGTAG, "Trying to connect to MQTT server %s:%s with client ID = %s, u: %s, p: %s",
+  //              mqttServer, clientId.c_str(), mqttPort, mqttUser, mqttPassWd);
+  
   bool ok = mqttClient.connect(clientId.c_str(), mqttUser, mqttPassWd);
   // bool ok = false;
 

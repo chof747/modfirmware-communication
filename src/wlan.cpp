@@ -54,10 +54,11 @@ bool WLan::setup(Application *app)
   {
     wifiMgr.setSaveConfigCallback([this]()
                                   { notifySaveConfig(); });
-
     initializeAndAddParametersFromConfigurators();
-    //wifiMgr.resetSettings();
 
+    wifiMgr.setConfigPortalBlocking(false);
+    wifiMgr.setConfigPortalTimeout(60);
+    
     logger->info(LOGCOMPONENT, "Starting Wifi!");
     if (wifiMgr.autoConnect(configSSID, configPassWd))
     {
@@ -81,6 +82,7 @@ bool WLan::setup(Application *app)
 void WLan::loop()
 //****************************************************************************************
 {
+  wifiMgr.process();
 }
 
 void WLan::initializeAndAddParametersFromConfigurators()

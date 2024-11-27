@@ -10,7 +10,6 @@
 #include <ESP8266WiFi.h>
 #endif
 
-
 using namespace ModFirmWare;
 
 #define LOGCOMPONENT "WIFI"
@@ -18,9 +17,8 @@ WiFiManager wifiMgr;
 
 #define IS_VALID_KEY(KEY) ((WIFI_SSID == KEY) || (WIFI_PASSWD == KEY))
 
-WLan::WLan(const char *configSSID, const char *configPassWd) : 
-  Component(), configurators(), configSSID(configSSID), configPassWd(configPassWd),
-  client()
+WLan::WLan(const char *configSSID, const char *configPassWd) : Component(), configurators(), configSSID(configSSID), configPassWd(configPassWd),
+                                                               client()
 //****************************************************************************************
 {
 }
@@ -52,13 +50,14 @@ bool WLan::setup(Application *app)
 {
   if (Component::setup(app))
   {
+    logger->debug(LOGCOMPONENT, "Initializing WiFi");
     wifiMgr.setSaveConfigCallback([this]()
                                   { notifySaveConfig(); });
     initializeAndAddParametersFromConfigurators();
 
     wifiMgr.setConfigPortalBlocking(false);
     wifiMgr.setConfigPortalTimeout(60);
-    
+
     logger->info(LOGCOMPONENT, "Starting Wifi!");
     if (wifiMgr.autoConnect(configSSID, configPassWd))
     {
